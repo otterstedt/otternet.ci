@@ -1,0 +1,193 @@
+jobs:
+- name: trigger_job
+  plan:
+  - get: otternet_conf
+    trigger: true
+  - get: otternet_ansible
+    trigger: true
+  - task: conf_task
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+            repository: ubuntu
+      inputs:
+      - name: otternet_conf
+      - name: otternet_ansible
+      outputs:
+      - name: otternet_conf
+      - name: otternet_ansible
+      run:
+        path: date
+
+- name: system_setup_job
+  plan:
+  - get: otternet_conf
+    passed: [trigger_job]
+    trigger: true
+  - get: otternet_ansible
+  - task: deploy_task
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: otterstedt/ansible-cli
+      inputs:
+      - name: otternet_conf
+        path: /tmp/otternet_conf
+      - name: otternet_ansible
+      params:
+        ANSIBLE_SSH_KEY: ((otternet_ssh_key))
+        ANSIBLE_VAULT_PASSWORD: ((otternet_ansible_vault_password))
+        ANSIBLE_HOST_KEY_CHECKING: False 
+      run:
+        path: /bin/bash
+        args: 
+          - "-c"
+          - |
+            set -e
+            mkdir ~/.ssh
+            touch ~/.ssh/id_rsa
+            chmod 0600 ~/.ssh/id_rsa
+            echo "$ANSIBLE_SSH_KEY" > ~/.ssh/id_rsa
+            touch ~/.ansible.vault
+            chmod 0600 ~/.ansible.vault
+            echo $ANSIBLE_VAULT_PASSWORD > ~/.ansible.vault
+            cd otternet_ansible
+            ansible-playbook -i inventories/sln playbooks/system/setup.yml
+
+- name: applications_job
+  plan:
+  - get: otternet_conf
+    passed: [system_setup_job]
+    trigger: true
+  - get: otternet_ansible
+  - task: deploy_task
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: otterstedt/ansible-cli
+      inputs:
+      - name: otternet_conf
+        path: /tmp/otternet_conf
+      - name: otternet_ansible
+      params:
+        ANSIBLE_SSH_KEY: ((otternet_ssh_key))
+        ANSIBLE_VAULT_PASSWORD: ((otternet_ansible_vault_password))
+        ANSIBLE_HOST_KEY_CHECKING: False 
+      run:
+        path: /bin/bash
+        args: 
+          - "-c"
+          - |
+            set -e
+            mkdir ~/.ssh
+            touch ~/.ssh/id_rsa
+            chmod 0600 ~/.ssh/id_rsa
+            echo "$ANSIBLE_SSH_KEY" > ~/.ssh/id_rsa
+            touch ~/.ansible.vault
+            chmod 0600 ~/.ansible.vault
+            echo $ANSIBLE_VAULT_PASSWORD > ~/.ansible.vault
+            cd otternet_ansible
+            ansible-playbook -i inventories/sln playbooks/applications/setup.yml
+
+- name: hass_install_job
+  serial_groups: [hass]
+  plan:
+  - get: otternet_conf
+    passed: [trigger_job]
+    trigger: true
+  - get: otternet_ansible
+  - task: deploy_task
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: otterstedt/ansible-cli
+      inputs:
+      - name: otternet_conf
+        path: /tmp/otternet_conf
+      - name: otternet_ansible
+      outputs:
+      - name: otternet_conf
+      - name: otternet_ansible
+      params:
+        ANSIBLE_SSH_KEY: ((otternet_ssh_key))
+        ANSIBLE_VAULT_PASSWORD: ((otternet_ansible_vault_password))
+        ANSIBLE_HOST_KEY_CHECKING: False
+      run:
+        path: /bin/bash
+        args: 
+          - "-c"
+          - |
+            set -e
+            mkdir ~/.ssh
+            touch ~/.ssh/id_rsa
+            chmod 0600 ~/.ssh/id_rsa
+            echo "$ANSIBLE_SSH_KEY" > ~/.ssh/id_rsa
+            touch ~/.ansible.vault
+            chmod 0600 ~/.ansible.vault
+            echo $ANSIBLE_VAULT_PASSWORD > ~/.ansible.vault
+            cd otternet_ansible
+            ansible-playbook -i inventories/sln playbooks/hass/deploy.yml  --tags "install"
+
+- name: hass_config_job
+  serial_groups: [hass]
+  plan:
+  - get: otternet_conf
+    passed: [hass_install_job]
+    trigger: true
+  - get: otternet_ansible
+  - task: deploy_task
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: otterstedt/ansible-cli
+      inputs:
+      - name: otternet_conf
+        path: /tmp/otternet_conf
+      - name: otternet_ansible
+      params:
+        ANSIBLE_SSH_KEY: ((otternet_ssh_key))
+        ANSIBLE_VAULT_PASSWORD: ((otternet_ansible_vault_password))
+        ANSIBLE_HOST_KEY_CHECKING: False 
+      run:
+        path: /bin/bash
+        args: 
+          - "-c"
+          - |
+            set -e
+            mkdir ~/.ssh
+            touch ~/.ssh/id_rsa
+            chmod 0600 ~/.ssh/id_rsa
+            echo "$ANSIBLE_SSH_KEY" > ~/.ssh/id_rsa
+            touch ~/.ansible.vault
+            chmod 0600 ~/.ansible.vault
+            echo $ANSIBLE_VAULT_PASSWORD > ~/.ansible.vault
+            cd otternet_ansible
+            ansible-playbook -i inventories/sln playbooks/hass/deploy.yml --tags "configure"
+
+
+
+
+     
+        
+resources:
+- name: otternet_conf
+  type: git
+  source:
+    uri: https://github.com/otterstedt/otternet.conf.git
+    branch: master
+
+- name: otternet_ansible
+  type: git
+  source: 
+    uri: https://github.com/otterstedt/otternet.apr.git
+    branch: master
