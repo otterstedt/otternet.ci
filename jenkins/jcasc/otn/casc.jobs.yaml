@@ -1,3 +1,4 @@
+# Requires the job-dsl plugin
 jobs:
   - script: >
       pipelineJob("Hello world") {
@@ -31,6 +32,24 @@ jobs:
               }
             }
             scriptPath("jenkins/jobs/examples/hello-world/Jenkinsfile")
+          }
+        }
+        disabled(false)
+      }
+  - script: >
+      pipelineJob("Node version") {
+        description("Show docker agent node version")
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url("https://github.com/otterstedt/otternet.ci.git")
+                }
+                branch("master")
+              }
+            }
+            scriptPath("jenkins/jobs/examples/docker-agent/Jenkinsfile")
           }
         }
         disabled(false)
