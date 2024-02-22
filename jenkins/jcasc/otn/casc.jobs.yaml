@@ -1,5 +1,23 @@
 jobs:
   - script: >
+      pipelineJob("Hello world") {
+        description("Does it work?")
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url("https://github.com/otterstedt/otternet.ci.git")
+                }
+                branch("master")
+              }
+            }
+            scriptPath("jenkins/jobs/examples/hello-world/Jenkinsfile")
+          }
+        }
+        disabled(false)
+      }
+  - script: >
       pipelineJob("Hello world 2") {
         description("Does it work? Maybe?")
         definition {
