@@ -91,7 +91,7 @@ jobs:
         disabled(false)
       }
   - script: >
-      pipelineJob("Use docker-plugin with jenkins/agent image as agent") {
+      pipelineJob("Use docker-plugin with jenkins-agent image as agent") {
         description("Does something with jenkins/agent image")
         definition {
           cpsScm {
