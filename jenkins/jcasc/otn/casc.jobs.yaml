@@ -88,8 +88,7 @@ jenkins:
             instanceCapStr: "10"
             mode: "EXCLUSIVE"
             retentionStrategy:
-              idleRetentionStrategy:
-                idleMinutes: "10"
+              idleMinutes: "10"
             dockerTemplateBase:
               image: "jenkins/ssh-agent:latest"
               privileged: true
