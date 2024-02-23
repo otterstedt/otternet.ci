@@ -1,0 +1,12 @@
+pipeline {
+    agent {
+        label 'inbound-agent'
+    }
+    stages {
+        stage('Test') {
+            steps {
+                sh 'uptime'
+            }
+        }
+    }
+}
