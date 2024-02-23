@@ -90,6 +90,24 @@ jobs:
         }
         disabled(false)
       }
+  - script: >
+      pipelineJob("Use docker-plugin with inbound agent image as agent") {
+        description("Does something with jenkins/agent image")
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url("https://github.com/otterstedt/otternet.ci.git")
+                }
+                branch("master")
+              }
+            }
+            scriptPath("jenkins/jobs/examples/docker-plugin/Jenkinsfile.agent")
+          }
+        }
+        disabled(false)
+      }
 jenkins:
   clouds:
     - docker:
@@ -122,5 +140,18 @@ jenkins:
               idleMinutes: "10"
             dockerTemplateBase:
               image: "jenkins/inbound-agent:latest"
+              privileged: true
+            removeVolumes: true
+          - labelString: "agent"
+            connector:
+              attach:
+                user: "jenkins"
+            remoteFs: "/home/jenkins/agent"
+            instanceCapStr: "10"
+            mode: "EXCLUSIVE"
+            retentionStrategy:
+              idleMinutes: "10"
+            dockerTemplateBase:
+              image: "jenkins/agent:latest"
               privileged: true
             removeVolumes: true
