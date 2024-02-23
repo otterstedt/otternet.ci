@@ -72,6 +72,24 @@ jobs:
         }
         disabled(false)
       }
+  - script: >
+      pipelineJob("Use docker-plugin with node image as agent") {
+        description("Does something")
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url("https://github.com/otterstedt/otternet.ci.git")
+                }
+                branch("master")
+              }
+            }
+            scriptPath("jenkins/jobs/examples/docker-plugin/Jenkinsfile.node")
+          }
+        }
+        disabled(false)
+      }
 jenkins:
   clouds:
     - docker:
@@ -91,5 +109,18 @@ jenkins:
               idleMinutes: "10"
             dockerTemplateBase:
               image: "jenkins/ssh-agent:latest"
+              privileged: true
+            removeVolumes: true
+          - labelString: "node-agent"
+            connector:
+              attach:
+                user: "jenkins"
+            remoteFs: "/home/jenkins/agent"
+            instanceCapStr: "10"
+            mode: "EXCLUSIVE"
+            retentionStrategy:
+              idleMinutes: "10"
+            dockerTemplateBase:
+              image: "node:latest"
               privileged: true
             removeVolumes: true
