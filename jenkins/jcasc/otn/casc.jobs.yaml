@@ -72,3 +72,26 @@ jobs:
         }
         disabled(false)
       }
+jenkins:
+  clouds:
+    - docker:
+        name: "docker-plugin"
+        dockerApi:
+          dockerHost:
+            uri: "unix://var/run/docker.sock"
+        templates:
+          - labelString: "docker-plugin"
+            connector:
+              attach:
+                user: "jenkins"
+            remoteFs: "/home/jenkins/agent"
+            instanceCapStr: "10"
+            mode: "EXCLUSIVE"
+            retentionStrategy:
+              idleRetentionStrategy:
+                idleMinutes: "10"
+            dockerTemplateBase:
+              image: "jenkins/ssh-agent:latest"
+              pullStrategy: "PULL_LATEST"
+              privileged: true
+            removeVolumes: true
