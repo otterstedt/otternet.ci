@@ -92,6 +92,5 @@ jenkins:
                 idleMinutes: "10"
             dockerTemplateBase:
               image: "jenkins/ssh-agent:latest"
-              pullStrategy: "PULL_LATEST"
               privileged: true
             removeVolumes: true
