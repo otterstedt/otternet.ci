@@ -54,3 +54,21 @@ jobs:
         }
         disabled(false)
       }
+  - script: >
+      pipelineJob("Use docker-plugin as agent") {
+        description("Does something")
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url("https://github.com/otterstedt/otternet.ci.git")
+                }
+                branch("master")
+              }
+            }
+            scriptPath("jenkins/jobs/examples/docker-plugin/Jenkinsfile")
+          }
+        }
+        disabled(false)
+      }

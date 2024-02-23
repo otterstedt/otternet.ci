@@ -1,0 +1,12 @@
+pipeline {
+  agent {
+    label 'docker-plugin'
+  }
+  stages {
+    stage ('Dummy') {
+      steps {
+        sh 'whoami'
+      }
+    }
+  }
+}
